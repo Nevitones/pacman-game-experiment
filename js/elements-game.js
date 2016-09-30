@@ -4,6 +4,7 @@ $(document).ready(function() {
     'use strict';
     var loopId,
         FPS = 40,
+        DIRECTIONS = ['top', 'right', 'bottom', 'left'],
         $document = $(this),
         $game = $('#game'),
         // $clear = $('<div class="clear"></div>'),
@@ -49,11 +50,11 @@ $(document).ready(function() {
             bottom: false,
             left: false
         },
-        enemyDirection = 'top',
+        enemyDirection = 'bottom',
         enemyMovement = {
-            top: true,
+            top: false,
             right: false,
-            bottom: false,
+            bottom: true,
             left: false
         },
         lastMove = 'top',
@@ -238,13 +239,13 @@ $(document).ready(function() {
         $character.css({
             width: blockSize.width,
             height: blockSize.height,
-            top: 12 * blockSize.height,
+            top: 23 * blockSize.height,
             left: 7 * blockSize.width
         });
 
         $enemy.css({
-            top: 2 * blockSize.height,
-            left: 1 * blockSize.width
+            top: 13 * blockSize.height,
+            left: 7 * blockSize.width
         });
 
         $game
@@ -459,109 +460,77 @@ $(document).ready(function() {
         return 'top';
     }
 
+    function findWay(enemyRect) {
+        var skipDirection1,
+            skipDirection2,
+            movements = {
+                top: translateRect(cloneRect(enemyRect), 0, -stepSize),
+                right: translateRect(cloneRect(enemyRect), stepSize, 0),
+                bottom: translateRect(cloneRect(enemyRect), 0, stepSize),
+                left: translateRect(cloneRect(enemyRect), -stepSize, 0)
+            },
+            movementHitTests = {
+                top: hitTestMap(movements.top),
+                right: hitTestMap(movements.right),
+                bottom: hitTestMap(movements.bottom),
+                left: hitTestMap(movements.left)
+            },
+            characterDirection = changeEnemyDirection(enemyRect, $character.position()),
+            i,
+            direction;
+
+        for (i = 0; i < DIRECTIONS.length; i++) {
+            direction = DIRECTIONS[i];
+
+            if (enemyDirection === direction) {
+
+                if (direction === 'top' || direction === 'bottom') {
+                    skipDirection1 = 'left';
+                    skipDirection2 = 'right';
+                } else {
+                    skipDirection1 = 'top';
+                    skipDirection2 = 'bottom';
+                }
+
+                if (!movementHitTests[skipDirection1] && characterDirection[skipDirection1]) {
+                    enemyDirection = skipDirection1;
+                    lastMove = skipDirection1;
+                    return movements[skipDirection1];
+                }
+
+                if (!movementHitTests[skipDirection2] && characterDirection[skipDirection2]) {
+                    enemyDirection = skipDirection2;
+                    lastMove = skipDirection2;
+                    return movements[skipDirection2];
+                }
+                
+                if (!movementHitTests[direction]) {
+                    lastMove = direction;
+                    return movements[direction];
+                }
+            }
+        }
+
+        return null;
+    }
+
     function moveEnemy() {
         var position = $enemy.position(),
-            enemyRect = {
+            enemyRect = { //TODO Put this into a object
                 top: position.top,
                 right: position.left + $enemy.outerWidth() - 1,
                 bottom: position.top + $enemy.outerHeight() - 1,
                 left: position.left
             },
-            movements = {},
-            movementHitTests = {},
-            // newEnemyRect,
-            characterDirection,
-            // enemyPos = $enemy.position(),
-            characterPos = $character.position(),
-            stucked = true;
+            enemyMove = findWay(enemyRect);
 
-        characterDirection = changeEnemyDirection(enemyRect, characterPos);
-
-        movements = {
-            top: translateRect(cloneRect(enemyRect), 0, -stepSize),
-            right: translateRect(cloneRect(enemyRect), stepSize, 0),
-            bottom: translateRect(cloneRect(enemyRect), 0, stepSize),
-            left: translateRect(cloneRect(enemyRect), -stepSize, 0)
-        };
-
-        movementHitTests = {
-            top: hitTestMap(movements.top),
-            right: hitTestMap(movements.right),
-            bottom: hitTestMap(movements.bottom),
-            left: hitTestMap(movements.left)
-        };
-
-        if (enemyDirection === 'top' && stucked) {
-            if (!movementHitTests.left && characterDirection.left) {
-                enemyDirection = 'left';
-                enemyRect = movements.left;
-                stucked = false;
-            } else if (!movementHitTests.right && characterDirection.right) {
-                enemyDirection = 'right';
-                enemyRect = movements.right;
-                stucked = false;
-            } else if (!movementHitTests.top) {
-                enemyRect = movements.top;
-                lastMove = 'top';
-                stucked = false;
-            }
-        }
-
-        if (enemyDirection === 'right' && stucked) {
-            if (!movementHitTests.top && characterDirection.top) {
-                enemyDirection = 'top';
-                enemyRect = movements.top;
-                stucked = false;
-            } else if (!movementHitTests.bottom && characterDirection.bottom) {
-                enemyDirection = 'bottom';
-                enemyRect = movements.bottom;
-                stucked = false;
-            } else if (!movementHitTests.right) {
-                enemyRect = movements.right;
-                lastMove = 'right';
-                stucked = false;
-            }
-        }
-
-        if (enemyDirection === 'bottom' && stucked) {
-            if (!movementHitTests.left && characterDirection.left) {
-                enemyDirection = 'left';
-                enemyRect = movements.left;
-                stucked = false;
-            } else if (!movementHitTests.right && characterDirection.right) {
-                enemyDirection = 'right';
-                enemyRect = movements.right;
-                stucked = false;
-            } else if (!movementHitTests.bottom) {
-                enemyRect = movements.bottom;
-                lastMove = 'bottom';
-                stucked = false;
-            }
-        }
-
-        if (enemyDirection === 'left' && stucked) {
-            if (!movementHitTests.top && characterDirection.top) {
-                enemyDirection = 'top';
-                enemyRect = movements.top;
-                stucked = false;
-            } else if (!movementHitTests.bottom && characterDirection.bottom) {
-                enemyDirection = 'bottom';
-                enemyRect = movements.bottom;
-                stucked = false;
-            } else if (!movementHitTests.left) {
-                enemyRect = movements.left;
-                lastMove = 'left';
-                stucked = false;
-            }
-        }
-
-        if (stucked) {
-            enemyDirection = turnRight(enemyDirection);
-        } else {
+        if (enemyMove) {
             $enemy.css({
-                top: enemyRect.top,
-                left: enemyRect.left
+                top: enemyMove.top,
+                left: enemyMove.left
             });
+        } else {
+            enemyDirection = turnRight(enemyDirection);
         }
     }
 
@@ -588,76 +557,9 @@ $(document).ready(function() {
         }
     }
 
-    // function checkHitBlocks(rect) {
-    //     var newCharacterRect = cloneRect(rect),
-    //         hits;
-
-    //     if (keysPressed.top) {
-    //         newCharacterRect.top -= stepSize;
-    //         newCharacterRect.bottom -= stepSize;
-    //     }
-
-    //     if (keysPressed.right) {
-    //         newCharacterRect.left += stepSize;
-    //         newCharacterRect.right += stepSize;
-    //     }
-
-    //     if (keysPressed.bottom) {
-    //         newCharacterRect.top += stepSize;
-    //         newCharacterRect.bottom += stepSize;
-    //     }
-
-    //     if (keysPressed.left) {
-    //         newCharacterRect.left -= stepSize;
-    //         newCharacterRect.right -= stepSize;
-    //     }
-
-    //     hits = hitTestMap(newCharacterRect);
-
-    //     newCharacterRect = cloneRect(rect);
-
-    //     if (keysPressed.top) {
-    //         if (!hits.top) {
-    //             newCharacterRect.top -= stepSize;
-    //             newCharacterRect.bottom -= stepSize;
-    //         } else {
-    //             keysPressed.top = false;
-    //         }
-    //     }
-
-    //     if (keysPressed.right) {
-    //         if (!hits.right) {
-    //             newCharacterRect.left += stepSize;
-    //             newCharacterRect.right += stepSize;
-    //         } else {
-    //             keysPressed.right = false;
-    //         }
-    //     }
-
-    //     if (keysPressed.bottom) {
-    //         if (!hits.bottom) {
-    //             newCharacterRect.top += stepSize;
-    //             newCharacterRect.bottom += stepSize;
-    //         } else {
-    //             keysPressed.bottom = false;
-    //         }
-    //     }
-
-    //     if (keysPressed.left) {
-    //         if (!hits.left) {
-    //             newCharacterRect.left -= stepSize;
-    //             newCharacterRect.right -= stepSize;
-    //         } else {
-    //             keysPressed.left = false;
-    //         }
-    //     }
-
-    //     return newCharacterRect;
-    // }
-
     function gameLoop() {
         var position = $character.position(),
-            characterRect = {
+            characterRect = { //TODO Put this into a object
                 top: position.top,
                 right: position.left + $character.outerWidth() - 1,
                 bottom: position.top + $character.outerHeight() - 1,
@@ -665,10 +567,8 @@ $(document).ready(function() {
             },
             newCharacterRect;
 
-
         moveEnemy();
         checkHitEnemy();
-        // characterRect = checkHitBlocks(characterRect);
 
         if (keysPressed.top) {
             newCharacterRect = cloneRect(characterRect);
@@ -744,10 +644,8 @@ $(document).ready(function() {
     function init() {
         $document.on('keydown keyup', handleKeys);
         renderMap();
-        loopId = setInterval(gameLoop, 1000/ FPS); 
-        // loopId = setInterval(gameLoop, 25);
+        loopId = setInterval(gameLoop, 1000 / FPS);
     }
 
     init();
-
 });
