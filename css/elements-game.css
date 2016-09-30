@@ -1,0 +1,293 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-family: Arial;
+    background-color: #000;
+    text-align: center;
+}
+
+* {
+    box-sizing: border-box;
+    // border-radius: 0 !important;
+}
+
+#game {
+    position: relative;
+    background-color: #654733;
+    background-image: url('/img/floor.png');
+    background-size: 20px;
+    margin: 50px auto;
+    padding: 20px;
+    background-clip: content-box;
+}
+
+#game .hit {
+    border: solid 1px red !important;
+}
+
+#game .rule {
+    border: 1px solid yellow !important;
+    z-index: 20;
+}
+
+/*#game .character,*/
+#game .empty,
+#game .block,
+#game .item,
+#game .enemy,
+#game .platforms {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+
+    /*border: solid 1px #9dc8d6;*/
+}
+
+#gameOver {
+    position: absolute;
+    z-index: 1;
+    top: calc(50% - 0.5em);
+    left: calc(50% - 150px);
+    width: 300px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: red;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
+    transform: scale(0.01);
+    visibility: hidden;
+    z-index: 5;
+}
+
+#gameOver.flip {
+    visibility: visible;
+    transition: transform 0.2s;
+    transform: scale(1);
+}
+
+.clear {
+    clear: both;
+}
+
+.empty {
+    background-color: lightblue;
+}
+
+#game .block {
+    background-color: green;
+    border: solid 1px #007000;
+    // border-radius: 5px;
+    // box-shadow: 0 0 40px darkgreen;
+    z-index: 1;
+}
+
+#game .block.top {
+    /*top-left, top-right, bottom-right, bottom-left*/
+    border-top-color: #00a000;
+    border-radius: 0;
+}
+
+#game .block.right {
+    border-radius: 0;
+    border-left-color: #00a000;
+    box-shadow: 1px 6px 8px #000600;
+}
+
+#game .block.bottom {
+    border-top-color: #00a000;
+    border-radius: 0;
+}
+
+#game .block.left {
+    border-radius: 0;
+    border-left-color: #00a000;
+    box-shadow: 1px 6px 8px #000600;
+}
+
+#game .block.face {
+    border: solid 1px #030;
+    background-color: #040;
+    border-radius: 0;
+    margin-top: -20px;
+    height: 40px;
+    z-index: 0;
+    box-shadow: 1px 2px 8px #000600;
+}
+
+#game .block.top-left {
+    border-top-color: #00a000;
+    border-left-color: #00a000;
+    border-radius: 10px 0 0 0;
+}
+
+#game .block.top-right {
+    border-top-color: #00a000;
+    border-radius: 0 10px 0 0;
+    // box-shadow: 1px 2px 8px #000600;
+}
+
+#game .block.bottom-left {
+    border-left-color: #00a000;
+    border-radius: 0 0 0 10px;
+}
+
+#game .block.bottom-right {
+    // border-left-color: #00a000;
+    border-radius: 0 0 10px 0;
+}
+
+#game .item {
+    // margin: 7px;
+    width: 6px; 
+    height: 6px;
+    background-color: gold;
+    border-radius: 100%;
+}
+
+.platform {
+    background-color: silver;
+}
+
+
+/* pacman */
+.character {
+    position: absolute;
+    // background-color: yellow;
+    // top: 320px;
+    // left: 140px;
+    
+    // top: 20px;
+    // left: 20px;
+
+    // top: 200px;
+    // left: 180px;
+
+    // top: 340px;
+    // left: 260px;
+
+    // top: 340px;
+    // left: 20px;
+
+    // top: 140px;
+    // left: 20px;
+
+    width: 20px;
+    height: 20px;
+    // position: relative;
+}
+
+.character.top {
+    transform: rotate(270deg);
+}
+
+.character.right {
+    transform: rotate(0deg);
+}
+
+.character.bottom {
+    transform: rotate(90deg);
+}
+
+.character.left {
+    transform: rotate(180deg);
+}
+
+.character .top-mouth, .character .bottom-mouth {
+    position: absolute;
+    border: solid 10px yellow;
+    border-radius: 10px;
+    animation-duration: 0.15s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+.character .top-mouth {
+    top: 0;
+    border-color: yellow yellow transparent transparent;
+    animation-name: top-mouth;
+}
+
+.character .bottom-mouth {
+    border-color: transparent yellow yellow transparent;
+    animation-name: bottom-mouth;
+}
+
+
+/* ghost */
+.enemy {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    // left: 140px;
+    // top: 180px;
+
+    left: 40px;
+    top: 40px;
+}
+
+.enemy .head {
+    /*display: none;*/
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 18px;
+    border-radius: 50% 50% 0 0;
+    background-color: blue;
+}
+
+.enemy .left-eye, .enemy .right-eye {
+    /*display: none;*/
+    position: absolute;
+    top: 35%;
+    width: 19%;
+    height: 21%;
+    background-color: #000;
+    border: 1px solid #fff;
+}
+
+.enemy .left-eye{
+    left: 23%;
+    border-radius: 50% 75% 30% 75%;
+}
+
+.enemy .right-eye {
+    right: 23%;
+    border-radius: 75% 50% 75% 30%;
+}
+
+.enemy .sheet {
+    position: absolute;
+    top: 100%;
+}
+
+.enemy .sheet > div {
+    float: left;
+    width: 0;
+    height: 0;
+    border: solid 2px transparent;
+    border-top-color: blue;
+}
+
+
+
+
+@keyframes top-mouth {
+  from {
+    transform: rotate(-47deg);
+  }
+
+  to {
+    transform: rotate(-90deg);
+  }
+}
+
+@keyframes bottom-mouth {
+  from {
+    transform: rotate(47deg);
+  }
+
+  to {
+    transform: rotate(90deg);
+  }
+}
